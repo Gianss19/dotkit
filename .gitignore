@@ -33,3 +33,4 @@ appsettings.*.local.*
 
 # Temp
 logs/
+artifacts/

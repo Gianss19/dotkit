@@ -1,0 +1,59 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+
+using {{Namespace}}.Configuration;
+
+namespace {{Namespace}}.Services;
+
+public class JwtService
+{
+    private readonly string _key;
+    private readonly string _issuer;
+    private readonly string _audience;
+
+    public JwtService(IOptions<JwtSettings> options)
+    {
+        _key = options.Value.SecretKey;
+        _issuer = options.Value.Issuer;
+        _audience = options.Value.Audience;
+    }
+
+    public string GenerateAccessToken(int userId, string name, string email, string role)
+    {
+        if (string.IsNullOrEmpty(_key))
+            throw new KeyNotFoundException("SecretKey no encontrada.");
+        if (string.IsNullOrEmpty(_issuer))
+            throw new KeyNotFoundException("issuer no encontrada.");
+        if (string.IsNullOrEmpty(_audience))
+            throw new KeyNotFoundException("Audience no encontrada.");
+
+        byte[] keyBytes = Encoding.UTF8.GetBytes(_key);
+        var key = new SymmetricSecurityKey(keyBytes);
+        var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, userId.ToString()),
+            new(ClaimTypes.Name, name),
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Role, role)
+        };
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Issuer = _issuer,
+            Audience = _audience,
+            Expires = DateTime.UtcNow.AddMinutes(30),
+            SigningCredentials = signingCredentials
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(token);
+    }
+}

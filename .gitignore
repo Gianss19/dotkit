@@ -1,0 +1,35 @@
+# IDE
+.vs/
+.vscode/
+.idea/
+*.sln.docstates
+*.suo
+*.user
+*.userosscache
+*.userprefs
+
+# Build
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+*.nupkg
+*.log
+
+# .NET
+*.DotSettings.user
+*.csproj.user
+
+# Secrets
+secrets.json
+appsettings.*.local.*
+**/appsettings.*.local.*
+
+# OS
+[Dd]esktop.ini
+[Dd]s_Store
+[Tt]humbs.db
+
+# Temp
+logs/

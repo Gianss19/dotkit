@@ -1,12 +1,17 @@
 # dotkit
 
-A .NET CLI tool that installs and configures JWT Authentication in ASP.NET Core Web API projects with a single command.
+> A .NET CLI tool that installs and configures JWT Authentication in ASP.NET Core Web API projects with a single command.
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Repository](https://img.shields.io/badge/repo-Gianss19%2Fdotkit-181717.svg?logo=github)](https://github.com/Gianss19/dotkit)
 
 ## Features
 
-- Installs `Microsoft.AspNetCore.Authentication.JwtBearer` NuGet package
+- Supports **.NET 6 and later**: multi-targeted tool (`net6.0`, `net8.0`, `net10.0`) that installs and runs on any .NET 6+ runtime
+- Detects the target project's target framework and **rejects frameworks older than .NET 6**
+- Installs `Microsoft.AspNetCore.Authentication.JwtBearer` NuGet package with the **version matched to the project's target framework** (resolved from NuGet, e.g. `6.0.x` for `net6.0`)
 - Adds `Jwt` section to `appsettings.json` with auto-generated secret key
-- Creates `JwtSettings` and `JwtService` ready-to-use classes
+- Creates `JwtSettings` and `JwtService` ready-to-use classes (C# 10 compatible, so they compile on `net6.0`)
 - Injects JWT authentication, DI registration, and middleware into `Program.cs`
 - Configures User Secrets for `SecretKey`, `Issuer`, and `Audience` (or writes them to `appsettings.json` via `--no-user-secrets`)
 - Logs progress to console and rolling files via Serilog
@@ -180,3 +185,33 @@ The tool is multi-targeted (`net6.0`, `net8.0`, `net10.0`) and the installer pic
 - Target framework: `net6.0` or later. Older frameworks (`net5.0`, `netcoreapp3.1`, `netstandard2.0`) are rejected.
 - The `Microsoft.AspNetCore.Authentication.JwtBearer` version is resolved automatically from the target project's framework (e.g. `6.0.x` for `net6.0`, `8.0.x` for `net8.0`), using the latest stable version for that line.
 - Generated templates (`JwtSettings.cs`, `JwtService.cs`) are compatible with C# 10, so they compile in `net6.0` projects.
+
+## Development
+
+Clone the repository and build, test, and pack locally:
+
+```bash
+git clone https://github.com/Gianss19/dotkit.git
+cd dotkit
+
+# Build all target frameworks (net6.0, net8.0, net10.0)
+dotnet build
+
+# Run the unit tests
+dotnet test
+
+# Pack the NuGet tool package
+dotnet pack -c Release -o artifacts
+```
+
+## Contributing
+
+Contributions are welcome! To report a bug, request a feature, or open a pull request, use the repository's issue tracker:
+
+- Repository: https://github.com/Gianss19/dotkit
+- Issues: https://github.com/Gianss19/dotkit/issues
+- Pull requests: https://github.com/Gianss19/dotkit/pulls
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

@@ -17,8 +17,8 @@
     <Description>CLI tool to install and configure JWT Authentication in ASP.NET Core Web API projects. Installs NuGet packages, creates JwtSettings/JwtService templates, injects authentication in Program.cs, and configures User Secrets.</Description>
     <PackageTags>jwt;authentication;aspnetcore;webapi;cli;tool;dotnet;jwt-bearer</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/dotkit/dotkit</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/dotkit/dotkit.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Gianss19/dotkit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Gianss19/dotkit.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>

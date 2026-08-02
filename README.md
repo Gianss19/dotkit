@@ -4,6 +4,8 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Repository](https://img.shields.io/badge/repo-Gianss19%2Fdotkit-181717.svg?logo=github)](https://github.com/Gianss19/dotkit)
+[![CI](https://github.com/Gianss19/dotkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Gianss19/dotkit/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/dotkit)](https://www.nuget.org/packages/dotkit)
 
 ## Features
 
@@ -186,6 +188,26 @@ The tool is multi-targeted (`net6.0`, `net8.0`, `net10.0`) and the installer pic
 - The `Microsoft.AspNetCore.Authentication.JwtBearer` version is resolved automatically from the target project's framework (e.g. `6.0.x` for `net6.0`, `8.0.x` for `net8.0`), using the latest stable version for that line.
 - Generated templates (`JwtSettings.cs`, `JwtService.cs`) are compatible with C# 10, so they compile in `net6.0` projects.
 
+## CI/CD & Releases
+
+The repository uses GitHub Actions with a **supply-chain hardened** setup:
+
+- `.github/workflows/ci.yml` — runs on push to `main`/`dev` and on PRs: build (all 3 TFMs), unit tests, NuGet vulnerability audit (`dotnet list package --vulnerable`), pack, and an end-to-end smoke test (`scripts/e2e.sh`) that installs the packed tool and verifies `/token` and `/protected` behavior on `net6.0`, `net8.0`, and `net10.0` samples.
+- `.github/workflows/release.yml` — publishes to NuGet.org using **Trusted Publishing (OIDC)**: no long-lived API keys. It requests a short-lived API key at push time via `NuGet/login@v1` and uses `--skip-duplicate`.
+- Actions are pinned to commit SHAs and kept updated by **Dependabot** (`.github/dependabot.yml`).
+- `global.json` pins the .NET SDK (`10.0.302`) for reproducible builds; `ContinuousIntegrationBuild` enables deterministic packaging in CI.
+- Permissions are least-privilege (`contents: read`, `id-token: write` only on the publish job) and `persist-credentials: false`.
+
+### How to publish a release
+
+1. **One-time setup**:
+   - nuget.org → your account → **Trusted Publishing** → add a policy for owner `Gianss19`, repository `dotkit`, workflow file `release.yml`.
+   - GitHub repo → **Settings → Secrets and variables → Actions** → add `NUGET_USER` = your nuget.org username (profile name, not email).
+2. **Trigger a publish**:
+   - Manually: Actions → **Release** → *Run workflow* → enter `version` (e.g. `1.1.0`).
+   - Or push a tag: `git tag v1.2.0 && git push origin v1.2.0`.
+   The version is validated against a SemVer regex before packaging.
+
 ## Development
 
 Clone the repository and build, test, and pack locally:
@@ -198,10 +220,16 @@ cd dotkit
 dotnet build
 
 # Run the unit tests
-dotnet test
+dotnet test tests/dotkit.Tests.csproj
+
+# Audit NuGet packages for known vulnerabilities
+dotnet list dotkit.csproj package --vulnerable --include-transitive
 
 # Pack the NuGet tool package
 dotnet pack -c Release -o artifacts
+
+# End-to-end smoke test (needs a bash shell; uses the packed nupkg in artifacts/)
+bash scripts/e2e.sh
 ```
 
 ## Contributing

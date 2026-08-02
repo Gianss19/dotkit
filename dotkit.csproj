@@ -9,6 +9,10 @@
     <UserSecretsId>bbd3ab05-88f5-444c-8e71-d413b5080beb</UserSecretsId>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotkit</ToolCommandName>
     <PackageId>dotkit</PackageId>
@@ -33,6 +37,10 @@
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotkit.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,15 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace dotkit.Services;
 
 public class PackageVersionResolver
 {
     private static readonly HttpClient DefaultHttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+
+    private static readonly Regex PackageIdRegex = new(
+        "^[A-Za-z0-9](?:[A-Za-z0-9_.-]{0,98}[A-Za-z0-9_-])?$",
+        RegexOptions.Compiled);
 
     private static readonly Dictionary<int, string> KnownVersions = new()
     {
@@ -24,7 +29,7 @@ public class PackageVersionResolver
 
     public async Task<string> ResolveAsync(string packageId, int major)
     {
-        if (major <= 0)
+        if (major <= 0 || string.IsNullOrWhiteSpace(packageId) || !PackageIdRegex.IsMatch(packageId))
             return string.Empty;
 
         try

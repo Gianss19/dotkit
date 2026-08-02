@@ -40,35 +40,46 @@ public class UserSecretsManager
             return;
         }
 
-        await ExecuteDotnetAsync($"user-secrets init --project \"{_project.ProjectPath}\"");
+        await ExecuteDotnetAsync(
+            BuildUserSecretsStartInfo("user-secrets", "init", "--project", _project.ProjectPath));
     }
 
     private async Task SetSecretAsync(string key, string value)
     {
         await ExecuteDotnetAsync(
-            $"user-secrets set --project \"{_project.ProjectPath}\" \"{key}\" \"{value}\"");
+            BuildUserSecretsStartInfo("user-secrets", "set", "--project", _project.ProjectPath, key, value));
     }
 
-    private async Task ExecuteDotnetAsync(string arguments)
+    private static ProcessStartInfo BuildUserSecretsStartInfo(params string[] arguments)
     {
-        using var process = new Process();
+        var startInfo = new ProcessStartInfo("dotnet")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
 
-        process.StartInfo.FileName = "dotnet";
-        process.StartInfo.Arguments = arguments;
-        process.StartInfo.WorkingDirectory = Path.GetDirectoryName(_project.ProjectPath)!;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.CreateNoWindow = true;
+        foreach (var argument in arguments)
+            startInfo.ArgumentList.Add(argument);
+
+        return startInfo;
+    }
+
+    private async Task ExecuteDotnetAsync(ProcessStartInfo startInfo)
+    {
+        startInfo.WorkingDirectory ??= Path.GetDirectoryName(_project.ProjectPath)!;
+
+        using var process = new Process { StartInfo = startInfo };
 
         process.Start();
 
-        string output = await process.StandardOutput.ReadToEndAsync();
+        _ = await process.StandardOutput.ReadToEndAsync();
         string error = await process.StandardError.ReadToEndAsync();
 
         await process.WaitForExitAsync();
 
         if (process.ExitCode != 0)
-            throw new InvalidOperationException($"Error: dotnet {arguments}\n{error}");
+            throw new InvalidOperationException($"Error: dotnet {startInfo.ArgumentList.FirstOrDefault()}\n{error}");
     }
 }

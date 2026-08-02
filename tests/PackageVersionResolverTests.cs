@@ -68,6 +68,27 @@ public class PackageVersionResolverTests
         Assert.EndsWith("microsoft.aspnetcore.authentication.jwtbearer/index.json", handler.LastRequestUrl);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("../evil")]
+    [InlineData("evil/path")]
+    [InlineData("pack;age")]
+    [InlineData("has space")]
+    [InlineData("conn\\ection")]
+    [InlineData("-starts-with-symbol")]
+    [InlineData("ends-with.dot.")]
+    public async Task ResolveAsync_RejectsInvalidPackageId_WithoutNetworkCall(string packageId)
+    {
+        var handler = new FakeHttpMessageHandler("""{"versions":["8.0.0"]}""");
+        var resolver = new PackageVersionResolver(new HttpClient(handler));
+
+        var version = await resolver.ResolveAsync(packageId, 8);
+
+        Assert.Equal(string.Empty, version);
+        Assert.Null(handler.LastRequestUrl);
+    }
+
     private sealed class FakeHttpMessageHandler : HttpMessageHandler
     {
         private readonly string _responseJson;

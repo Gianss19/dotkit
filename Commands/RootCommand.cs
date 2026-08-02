@@ -74,6 +74,7 @@ public class RootCommand
                 {
                     var secretKey = SecretKey ?? Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
                     await jsonEditor.UpdateAppSettingsAsync(secretKey, issuer, audience);
+                    logger.Warning("The secret key was written to appsettings.json. Do not commit it to source control; use User Secrets or environment variables in production.");
                 }
                 else
                 {

@@ -34,26 +34,13 @@ public class JwtInstaller
             else
                 _logger.Information("Targeting .NET {Major}: installing {Package} version {Version}", _project.LowestTargetFrameworkMajor, package, version);
 
-            var arguments = string.IsNullOrEmpty(version)
-                ? $"add \"{_project.ProjectPath}\" package {package}"
-                : $"add \"{_project.ProjectPath}\" package {package} --version {version}";
+            var startInfo = BuildDotnetAddStartInfo(_project.ProjectPath, package, version);
+            startInfo.WorkingDirectory = projectDir;
 
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = arguments,
-                    WorkingDirectory = projectDir,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
+            using var process = new Process { StartInfo = startInfo };
 
             process.Start();
-            string output = await process.StandardOutput.ReadToEndAsync();
+            _ = await process.StandardOutput.ReadToEndAsync();
             string error = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
 
@@ -65,5 +52,29 @@ public class JwtInstaller
 
             _logger.Information("Package {Package} installed", package);
         }
+    }
+
+    internal static ProcessStartInfo BuildDotnetAddStartInfo(string projectPath, string package, string? version)
+    {
+        var startInfo = new ProcessStartInfo("dotnet")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        startInfo.ArgumentList.Add("add");
+        startInfo.ArgumentList.Add(projectPath);
+        startInfo.ArgumentList.Add("package");
+        startInfo.ArgumentList.Add(package);
+
+        if (!string.IsNullOrEmpty(version))
+        {
+            startInfo.ArgumentList.Add("--version");
+            startInfo.ArgumentList.Add(version);
+        }
+
+        return startInfo;
     }
 }

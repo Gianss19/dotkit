@@ -8,11 +8,13 @@ public class JwtInstaller
 {
     private readonly ProjectInfo _project;
     private readonly ILogger _logger;
+    private readonly PackageVersionResolver _versionResolver;
 
-    public JwtInstaller(ProjectInfo project)
+    public JwtInstaller(ProjectInfo project, PackageVersionResolver? versionResolver = null)
     {
         _project = project;
         _logger = Log.ForContext<JwtInstaller>();
+        _versionResolver = versionResolver ?? new PackageVersionResolver();
     }
 
     public async Task InstallAsync()
@@ -25,12 +27,23 @@ public class JwtInstaller
         {
             _logger.Information("Installing package: {Package}", package);
 
+            var version = await _versionResolver.ResolveAsync(package, _project.LowestTargetFrameworkMajor);
+
+            if (string.IsNullOrEmpty(version))
+                _logger.Warning("Could not determine a compatible version of {Package} for target framework major {Major}; installing without a version", package, _project.LowestTargetFrameworkMajor);
+            else
+                _logger.Information("Targeting .NET {Major}: installing {Package} version {Version}", _project.LowestTargetFrameworkMajor, package, version);
+
+            var arguments = string.IsNullOrEmpty(version)
+                ? $"add \"{_project.ProjectPath}\" package {package}"
+                : $"add \"{_project.ProjectPath}\" package {package} --version {version}";
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "dotnet",
-                    Arguments = $"add \"{_project.ProjectPath}\" package {package}",
+                    Arguments = arguments,
                     WorkingDirectory = projectDir,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

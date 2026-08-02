@@ -20,7 +20,7 @@ dotnet tool install --global dotkit
 ## Usage
 
 ```bash
-dotkit jwt install [options]
+dotkit install [options]
 ```
 
 ### Options
@@ -38,19 +38,19 @@ dotkit jwt install [options]
 
 ```bash
 # Default: stores values in User Secrets
-dotkit jwt install
+dotkit install
 
 # Custom values
-dotkit jwt install --project ./MyApi --issuer "MyApp" --audience "MyApp"
+dotkit install --project ./MyApi --issuer "MyApp" --audience "MyApp"
 
 # Write values directly to appsettings.json (skip User Secrets)
-dotkit jwt install --no-user-secrets --secret-key "your-32-char-min-key-here..."
+dotkit install --no-user-secrets --secret-key "your-32-char-min-key-here..."
 ```
 
 ## What it does
 
-1. Detects the ASP.NET Core Web API project (must target `Microsoft.NET.Sdk.Web`)
-2. Installs `Microsoft.AspNetCore.Authentication.JwtBearer` NuGet package
+1. Detects the ASP.NET Core Web API project (must target `Microsoft.NET.Sdk.Web` and .NET 6.0 or later)
+2. Installs `Microsoft.AspNetCore.Authentication.JwtBearer` NuGet package (version matched to the project's target framework)
 3. Merges `Jwt` section into `appsettings.json`
 4. Creates `Configuration/JwtSettings.cs` and `Services/JwtService.cs`
 5. Injects into `Program.cs`:
@@ -73,11 +73,11 @@ After running, inject `JwtService` in any controller and call `GenerateAccessTok
 ## Lifecycle
 
 ```
-dotkit jwt install [options]
+dotkit install [options]
              │
              ▼
     ┌─────────────────────┐
-    │  Inicializar Serilog │  → %TEMP%\dotkit\logs\dotkit-YYYYMMDD.log
+    │  Initialize Serilog   │  → %TEMP%\dotkit\logs\dotkit-YYYYMMDD.log
     └─────────┬───────────┘
               ▼
     ┌─────────────────────┐
@@ -170,5 +170,13 @@ dotkit jwt install [options]
 
 ## Requirements
 
-- .NET 10 SDK or later
-- An ASP.NET Core Web API project targeting `net10.0`
+- A .NET runtime 6.0 or later to install and run the `dotkit` tool
+- An ASP.NET Core Web API project targeting `net6.0` or later (`net6.0`, `net8.0`, `net10.0`, ...)
+
+The tool is multi-targeted (`net6.0`, `net8.0`, `net10.0`) and the installer picks the binary that matches the runtime available on your machine.
+
+## Supported target projects
+
+- Target framework: `net6.0` or later. Older frameworks (`net5.0`, `netcoreapp3.1`, `netstandard2.0`) are rejected.
+- The `Microsoft.AspNetCore.Authentication.JwtBearer` version is resolved automatically from the target project's framework (e.g. `6.0.x` for `net6.0`, `8.0.x` for `net8.0`), using the latest stable version for that line.
+- Generated templates (`JwtSettings.cs`, `JwtService.cs`) are compatible with C# 10, so they compile in `net6.0` projects.

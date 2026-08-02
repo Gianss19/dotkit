@@ -22,17 +22,17 @@ public class JsonEditor
         var appSettingsPath = _project.AppSettingsPath;
         var templatePath = Path.Combine(TemplatesPath, "appsettings.json");
 
-        _logger.Information("Actualizando {Path}", appSettingsPath);
+        _logger.Information("Updating {Path}", appSettingsPath);
 
         if (!File.Exists(templatePath))
-            throw new FileNotFoundException($"Template no encontrado: {templatePath}");
+            throw new FileNotFoundException($"Template not found: {templatePath}");
 
         string templateContent = await File.ReadAllTextAsync(templatePath);
         JsonObject templateNode = JsonNode.Parse(templateContent)?.AsObject()
-            ?? throw new InvalidDataException("Template JSON inválido.");
+            ?? throw new InvalidDataException("Invalid template JSON.");
 
         if (!templateNode.TryGetPropertyValue("Jwt", out JsonNode? jwtNode))
-            throw new InvalidDataException("El template no contiene sección 'Jwt'.");
+            throw new InvalidDataException("Template does not contain a 'Jwt' section.");
 
         JsonObject appSettingsNode;
 
@@ -51,8 +51,8 @@ public class JsonEditor
                 }
                 catch (JsonException ex)
                 {
-                    _logger.Error(ex, "appsettings.json contiene JSON inválido");
-                    throw new InvalidDataException("El appsettings.json existente contiene JSON inválido.", ex);
+                    _logger.Error(ex, "appsettings.json contains invalid JSON");
+                    throw new InvalidDataException("The existing appsettings.json contains invalid JSON.", ex);
                 }
             }
         }
@@ -61,7 +61,7 @@ public class JsonEditor
             appSettingsNode = new JsonObject();
         }
 
-        var jwtConfig = jwtNode!.DeepClone();
+        var jwtConfig = JsonNode.Parse(jwtNode!.ToJsonString());
         if (jwtConfig is JsonObject jwtObj)
         {
             if (secretKey is not null)
@@ -77,6 +77,6 @@ public class JsonEditor
         var options = new JsonSerializerOptions { WriteIndented = true };
         await File.WriteAllTextAsync(appSettingsPath, appSettingsNode.ToJsonString(options));
 
-        _logger.Information("✓ appsettings.json actualizado");
+        _logger.Information("✓ appsettings.json updated");
     }
 }

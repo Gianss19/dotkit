@@ -2,18 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <RootNamespace>dotkit</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>bbd3ab05-88f5-444c-8e71-d413b5080beb</UserSecretsId>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotkit</ToolCommandName>
     <PackageId>dotkit</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>dotkit</Authors>
     <Description>CLI tool to install and configure JWT Authentication in ASP.NET Core Web API projects. Installs NuGet packages, creates JwtSettings/JwtService templates, injects authentication in Program.cs, and configures User Secrets.</Description>
     <PackageTags>jwt;authentication;aspnetcore;webapi;cli;tool;dotnet;jwt-bearer</PackageTags>
@@ -25,6 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="tests\**\*" />
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
@@ -36,9 +36,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Templates\**\*">
+    <Content Include="Templates\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+      <Pack>false</Pack>
+    </Content>
   </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeTemplatesInPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <Target Name="IncludeTemplatesInPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="Templates\**\*">
+        <PackagePath>tools/$(TargetFramework)/any/Templates</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 
 </Project>

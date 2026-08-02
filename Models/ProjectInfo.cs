@@ -8,6 +8,8 @@ public class ProjectInfo
     public string AppSettingsPath { get; set; } = string.Empty;
     public bool HasUserSecrets { get; set; } = false;
     public bool IsWebApi { get; set; } = false;
+    public List<string> TargetFrameworks { get; set; } = new();
+    public int LowestTargetFrameworkMajor { get; set; } = 0;
 
     public ProjectInfo()
     {

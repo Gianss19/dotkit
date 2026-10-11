@@ -73,7 +73,7 @@ jobs:
         run: dotnet nuget push "artifacts/dotkit.${{ steps.version.outputs.version }}.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Upload nupkg
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nupkg
           path: artifacts/dotkit.${{ steps.version.outputs.version }}.nupkg
